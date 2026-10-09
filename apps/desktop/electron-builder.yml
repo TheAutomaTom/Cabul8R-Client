@@ -1,0 +1,23 @@
+appId: org.cabul8r.desktop
+productName: Cabul8R
+directories:
+  output: release/${version}
+  buildResources: build
+files:
+  - out/**
+  - package.json
+fileAssociations:
+  - ext: pdf
+    name: PDF Plans
+    role: Viewer
+win:
+  target: nsis
+mac:
+  target: dmg
+  category: public.app-category.productivity
+linux:
+  target: AppImage
+  category: Graphics
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true

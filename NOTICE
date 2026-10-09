@@ -1,0 +1,16 @@
+Cabul8R
+Copyright 2026 The Cabul8R Authors
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This product includes third-party material:
+
+- Codicons (https://github.com/microsoft/vscode-codicons)
+  Icon font: Copyright (c) Microsoft Corporation, licensed under
+  Creative Commons Attribution 4.0 International (CC-BY-4.0).
+  Source code: MIT License.
+
+- The workbench layout and color tokens are modeled on Code - OSS
+  (https://github.com/microsoft/vscode), Copyright (c) Microsoft Corporation,
+  MIT License. Cabul8R is not affiliated with or endorsed by Microsoft;
+  "Visual Studio Code" is a trademark of Microsoft Corporation.

@@ -1,0 +1,29 @@
+{
+  "name": "@cabul8r/desktop",
+  "productName": "Cabul8R",
+  "version": "0.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "description": "Cabul8R desktop app",
+  "main": "./out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "package": "electron-vite build && electron-builder --config electron-builder.yml",
+    "typecheck": "tsc -p tsconfig.node.json && vue-tsc -p tsconfig.web.json"
+  },
+  "dependencies": {
+    "@cabul8r/app": "workspace:*",
+    "vue": "^3.5.43"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.9",
+    "electron": "^44.7.0",
+    "electron-builder": "^26.15.3",
+    "electron-vite": "^5.0.0",
+    "typescript": "~6.0.3",
+    "vite": "^7.3.7",
+    "vue-tsc": "^3.3.12"
+  }
+}
