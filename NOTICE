@@ -14,3 +14,8 @@ This product includes third-party material:
   (https://github.com/microsoft/vscode), Copyright (c) Microsoft Corporation,
   MIT License. Cabul8R is not affiliated with or endorsed by Microsoft;
   "Visual Studio Code" is a trademark of Microsoft Corporation.
+
+- PDF.js (https://github.com/mozilla/pdf.js), Copyright Mozilla Foundation,
+  Apache License 2.0. Bundled with it: OpenJPEG decoder (BSD 2-Clause),
+  JBIG2 decoder derived from PDFium (BSD 3-Clause), qcms (MIT), standard
+  font data (licenses in pdfjs-dist/standard_fonts), and ICC profiles (CC0 1.0).

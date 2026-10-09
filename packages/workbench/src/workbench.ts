@@ -14,12 +14,16 @@ export interface ViewContainer {
 
 export interface EditorTab {
   id: string
-  title: string
+  /** A function keeps the title live, e.g. when a page's sheet number is detected later. */
+  title: string | (() => string)
   icon?: string
   component: Component
   props?: Record<string, unknown>
   dirty?: boolean
 }
+
+export const tabTitle = (tab: Pick<EditorTab, 'title'>): string =>
+  typeof tab.title === 'function' ? tab.title() : tab.title
 
 export interface PanelView {
   id: string
@@ -46,6 +50,25 @@ export interface ContextMenuState {
   items: MenuItem[]
 }
 
+export interface QuickPickItem {
+  id: string
+  label: string
+  /** Dimmed text after the label. */
+  description?: string
+  icon?: string
+}
+
+export interface QuickPickRequest {
+  items: QuickPickItem[]
+  placeholder?: string
+  resolve: (item: QuickPickItem | undefined) => void
+}
+
+/** An entry for Go to (Ctrl+P), supplied by the app. */
+export interface QuickOpenItem extends QuickPickItem {
+  run: () => void
+}
+
 export interface WorkbenchState {
   theme: ThemeId
   activeContainer: string | undefined
@@ -56,7 +79,8 @@ export interface WorkbenchState {
   activePanel: string | undefined
   activeEditor: string | undefined
   paletteOpen: boolean
-  paletteMode: 'commands' | 'quickOpen'
+  paletteMode: 'commands' | 'quickOpen' | 'pick'
+  quickPick: QuickPickRequest | undefined
   contextMenu: ContextMenuState | undefined
 }
 
@@ -77,8 +101,18 @@ export class Workbench {
     activeEditor: undefined,
     paletteOpen: false,
     paletteMode: 'commands',
+    quickPick: undefined,
     contextMenu: undefined,
   })
+
+  /** Supplies Go to (Ctrl+P) entries; defaults to the open editors. */
+  quickOpenProvider: () => QuickOpenItem[] = () =>
+    this.editors.map((e) => ({
+      id: e.id,
+      label: tabTitle(e),
+      icon: e.icon,
+      run: () => (this.state.activeEditor = e.id),
+    }))
 
   constructor() {
     this.registerBuiltins()
@@ -149,7 +183,7 @@ export class Workbench {
     })
     c.register({
       id: 'workbench.action.quickOpen',
-      title: 'Go to Sheet...',
+      title: 'Go to Page...',
       category: 'Go',
       keybinding: 'mod+p',
       hidden: true,
@@ -190,6 +224,15 @@ export class Workbench {
         run: () => this.setTheme(theme.id),
       })
     }
+  }
+
+  /** Show a filterable list in the palette; resolves to the chosen item or undefined. */
+  showQuickPick(items: QuickPickItem[], options: { placeholder?: string } = {}) {
+    this.state.quickPick?.resolve(undefined)
+    return new Promise<QuickPickItem | undefined>((resolve) => {
+      this.state.quickPick = { items, placeholder: options.placeholder, resolve }
+      this.openPalette('pick')
+    })
   }
 
   openPalette(mode: WorkbenchState['paletteMode']): void {

@@ -1,6 +1,7 @@
 import { resolve } from 'node:path'
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import vue from '@vitejs/plugin-vue'
+import { pdfjsAssets } from '@cabul8r/pdf/vite'
 
 export default defineConfig({
   main: { plugins: [externalizeDepsPlugin({ exclude: ['@cabul8r/app'] })] },
@@ -8,6 +9,6 @@ export default defineConfig({
   renderer: {
     root: resolve(__dirname, 'src/renderer'),
     build: { rollupOptions: { input: resolve(__dirname, 'src/renderer/index.html') } },
-    plugins: [vue()],
+    plugins: [vue(), pdfjsAssets()],
   },
 })

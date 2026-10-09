@@ -34,3 +34,20 @@ describe('Workbench', () => {
     expect(document.documentElement.dataset.theme).toBe('light-modern')
   })
 })
+
+describe('quick pick', () => {
+  it('opens the palette in pick mode and resolves with the choice', async () => {
+    const wb = new Workbench()
+    const result = wb.showQuickPick([{ id: 'a', label: 'A' }], { placeholder: 'Pick' })
+    expect(wb.state).toMatchObject({ paletteOpen: true, paletteMode: 'pick' })
+    wb.state.quickPick!.resolve(wb.state.quickPick!.items[0])
+    expect(await result).toEqual({ id: 'a', label: 'A' })
+  })
+
+  it('resolves a superseded pick as cancelled', async () => {
+    const wb = new Workbench()
+    const first = wb.showQuickPick([{ id: 'a', label: 'A' }])
+    void wb.showQuickPick([{ id: 'b', label: 'B' }])
+    expect(await first).toBeUndefined()
+  })
+})

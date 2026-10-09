@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "license": "Apache-2.0",
-  "description": "Pure 2D geometry: vectors, segments, arcs, cubic béziers, areas, intersections.",
+  "description": "Pure 2D geometry: vectors, segments, arcs, cubic b\u00c3\u00a9ziers, areas, intersections.",
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
@@ -11,9 +11,11 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "typecheck": "tsc -p tsconfig.json"
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
   },
   "devDependencies": {
-    "typescript": "~6.0.3"
+    "typescript": "~6.0.3",
+    "vitest": "^5.0.3"
   }
 }

@@ -1,7 +1,29 @@
-import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, net, protocol, shell } from 'electron'
 import { readFile } from 'node:fs/promises'
-import { basename, join } from 'node:path'
+import { basename, join, normalize, sep } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { IPC, type DesktopBridge } from '../shared/ipc'
+
+/**
+ * The built renderer is served from app://cabul8r/ rather than file://, so it has a real origin:
+ * pdf.js can fetch its fonts and decoders and start its module worker, and the CSP's 'self' works.
+ */
+const APP_ORIGIN = 'app://cabul8r'
+const rendererRoot = join(__dirname, '../renderer')
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: 'app',
+    privileges: { standard: true, secure: true, supportFetchAPI: true, codeCache: true },
+  },
+])
+
+function serveRenderer(): void {
+  protocol.handle('app', (request) => {
+    const path = normalize(join(rendererRoot, decodeURIComponent(new URL(request.url).pathname)))
+    if (!path.startsWith(rendererRoot + sep)) return new Response('Not found', { status: 404 })
+    return net.fetch(pathToFileURL(path).toString())
+  })
+}
 
 /** Files the user chose in a dialog this session; the renderer may read only these. */
 const grantedPaths = new Set<string>()
@@ -32,7 +54,7 @@ function createWindow(): void {
   })
 
   if (process.env['ELECTRON_RENDERER_URL']) void win.loadURL(process.env['ELECTRON_RENDERER_URL'])
-  else void win.loadFile(join(__dirname, '../renderer/index.html'))
+  else void win.loadURL(`${APP_ORIGIN}/index.html`)
 }
 
 ipcMain.handle(IPC.openFiles, async (event, options: Parameters<DesktopBridge['openFiles']>[0]) => {
@@ -59,6 +81,7 @@ ipcMain.handle(IPC.readFile, async (_event, path: string) => {
 })
 
 void app.whenReady().then(() => {
+  serveRenderer()
   createWindow()
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()

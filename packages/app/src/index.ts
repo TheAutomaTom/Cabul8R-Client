@@ -3,9 +3,13 @@ import { createPinia } from 'pinia'
 import { Workbench, WorkbenchShell } from '@cabul8r/workbench'
 import type { HostAdapter } from './host'
 import { useOutput } from './output'
+import { taxonomy } from './plans'
+import { registerPlans } from './registerPlans'
 import { useSettings } from './settings'
 import OutputPanel from './views/OutputPanel.vue'
 import PlaceholderView from './views/PlaceholderView.vue'
+import PlansView from './views/PlansView.vue'
+import TakeoffPanel from './views/TakeoffPanel.vue'
 import WelcomeEditor from './views/WelcomeEditor.vue'
 
 export type { HostAdapter, HostFile, OpenFilesOptions } from './host'
@@ -25,30 +29,7 @@ export function mountCabul8r(el: string | Element, host: HostAdapter) {
   const settings = useSettings(pinia)
   const output = useOutput(pinia)
 
-  const openPdf = async () => {
-    const files = await host.openFiles({
-      title: 'Open PDF Plans',
-      filters: [{ name: 'PDF Plans', extensions: ['pdf'] }],
-      multiple: true,
-    })
-    for (const file of files) {
-      const bytes = await file.read()
-      output.log(
-        `Opened ${file.path ?? file.name} (${(bytes.byteLength / 1024).toFixed(0)} KB). Viewing arrives in M2.`,
-      )
-    }
-    if (files.length) workbench.state.activePanel = 'output'
-  }
-
   const c = workbench.commands
-  c.register({
-    id: 'cabul8r.openPdf',
-    title: 'Open PDF Plans...',
-    category: 'File',
-    icon: 'file-pdf',
-    keybinding: 'mod+o',
-    run: openPdf,
-  })
   c.register({
     id: 'cabul8r.toggleUnits',
     title: 'Toggle Imperial / Metric',
@@ -70,14 +51,10 @@ export function mountCabul8r(el: string | Element, host: HostAdapter) {
   })
 
   workbench.addViewContainer({
-    id: 'sheets',
-    title: 'Sheets',
+    id: 'plans',
+    title: taxonomy.label('planset', true),
     icon: 'files',
-    component: placeholder({
-      message: 'No sheets yet. Open PDF plans to start a takeoff.',
-      milestone: 'M2',
-      action: { label: 'Open PDF Plans...', run: openPdf },
-    }),
+    component: PlansView,
   })
   workbench.addViewContainer({
     id: 'layers',
@@ -102,10 +79,7 @@ export function mountCabul8r(el: string | Element, host: HostAdapter) {
   workbench.addPanel({
     id: 'takeoff',
     title: 'Takeoff',
-    component: placeholder({
-      message: 'Drawn vs. scaled measurements for every shape.',
-      milestone: 'M9',
-    }),
+    component: TakeoffPanel,
   })
   workbench.addPanel({ id: 'output', title: 'Output', component: OutputPanel })
 
@@ -116,13 +90,6 @@ export function mountCabul8r(el: string | Element, host: HostAdapter) {
     icon: () => (host.kind === 'desktop' ? 'device-desktop' : 'globe'),
     text: () => '',
     tooltip: host.description,
-  })
-  workbench.addStatusItem({
-    id: 'scale',
-    alignment: 'left',
-    icon: () => 'warning',
-    text: () => 'No scale',
-    tooltip: 'Scale calibration arrives in M3',
   })
   workbench.addStatusItem({
     id: 'units',
@@ -149,6 +116,8 @@ export function mountCabul8r(el: string | Element, host: HostAdapter) {
     run: () =>
       workbench.setTheme(themes[(themes.indexOf(workbench.state.theme) + 1) % themes.length]!),
   })
+
+  registerPlans(workbench, host, pinia)
 
   c.execute('cabul8r.showWelcome')
   output.log(`Cabul8R started (${host.description}).`)

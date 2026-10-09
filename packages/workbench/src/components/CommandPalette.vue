@@ -4,6 +4,7 @@ import { formatKeybinding, fuzzyScore } from '../commands'
 import { useWorkbench } from '../workbench'
 
 const wb = useWorkbench()
+const pick = wb.state.paletteMode === 'pick' ? wb.state.quickPick : undefined
 const prefix = wb.state.paletteMode === 'commands' ? '>' : ''
 const query = ref(prefix)
 const selected = ref(0)
@@ -13,14 +14,17 @@ const list = ref<HTMLElement>()
 interface Entry {
   id: string
   label: string
-  detail?: string
+  description?: string
+  icon?: string
   keybinding?: string
   run: () => void
 }
 
-const isCommandMode = computed(() => query.value.startsWith('>'))
+const isCommandMode = computed(() => !pick && query.value.startsWith('>'))
+let accepted = false
 
 const entries = computed<Entry[]>(() => {
+  if (pick) return pick.items.map((item) => ({ ...item, run: () => pick.resolve(item) }))
   if (isCommandMode.value) {
     return wb.commands
       .all()
@@ -32,21 +36,19 @@ const entries = computed<Entry[]>(() => {
         run: () => wb.commands.execute(c.id),
       }))
   }
-  // Quick open: editors are the only navigable items until sheets exist (M2).
-  return wb.editors.map((e) => ({
-    id: e.id,
-    label: e.title,
-    run: () => (wb.state.activeEditor = e.id),
-  }))
+  return wb.quickOpenProvider()
 })
 
 const filtered = computed(() => {
   const q = isCommandMode.value ? query.value.slice(1).trim() : query.value.trim()
-  return entries.value
-    .map((e) => ({ e, score: fuzzyScore(q, e.label) }))
-    .filter((x): x is { e: Entry; score: number } => x.score !== undefined)
-    .sort((a, b) => a.score - b.score || a.e.label.localeCompare(b.e.label))
-    .map((x) => x.e)
+  return (
+    entries.value
+      .map((e) => ({ e, score: fuzzyScore(q, `${e.label} ${e.description ?? ''}`) }))
+      .filter((x): x is { e: Entry; score: number } => x.score !== undefined)
+      // Pick lists keep their given order; commands and pages sort by match quality.
+      .sort((a, b) => (pick ? 0 : a.score - b.score || a.e.label.localeCompare(b.e.label)))
+      .map((x) => x.e)
+  )
 })
 
 watch(query, () => (selected.value = 0))
@@ -58,11 +60,17 @@ watch(selected, async () => {
 onMounted(() => input.value?.focus())
 
 function close() {
+  if (!wb.state.paletteOpen) return
   wb.state.paletteOpen = false
+  if (pick) {
+    if (!accepted) pick.resolve(undefined)
+    if (wb.state.quickPick === pick) wb.state.quickPick = undefined
+  }
 }
 
 function accept(entry = filtered.value[selected.value]) {
   if (!entry) return
+  accepted = true
   close()
   entry.run()
 }
@@ -87,8 +95,12 @@ function onKeydown(e: KeyboardEvent) {
         v-model="query"
         class="wb-input"
         spellcheck="false"
-        :placeholder="isCommandMode ? '' : 'Search sheets by name (type > for commands)'"
-        aria-label="Type the name of a command to run."
+        :placeholder="
+          pick ? (pick.placeholder ?? '') : isCommandMode ? '' : 'Go to page (type > for commands)'
+        "
+        :aria-label="
+          pick ? (pick.placeholder ?? 'Pick an item') : 'Type the name of a command to run.'
+        "
         @keydown="onKeydown"
         @blur="close"
       />
@@ -102,7 +114,11 @@ function onKeydown(e: KeyboardEvent) {
           @mousedown.prevent="accept(entry)"
           @mousemove="selected = i"
         >
-          <span class="label">{{ entry.label }}</span>
+          <span class="label">
+            <span v-if="entry.icon" class="codicon" :class="'codicon-' + entry.icon" />
+            {{ entry.label }}
+            <span v-if="entry.description" class="description">{{ entry.description }}</span>
+          </span>
           <span v-if="entry.keybinding" class="keys">
             <kbd
               v-for="k in formatKeybinding(entry.keybinding).split('+')"
@@ -166,6 +182,19 @@ li.selected {
 li.empty {
   cursor: default;
   color: var(--vscode-descriptionForeground);
+}
+.label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  white-space: nowrap;
+}
+.description {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  opacity: 0.7;
 }
 .keys {
   display: flex;

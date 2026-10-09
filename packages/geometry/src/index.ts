@@ -1,6 +1,5 @@
 /**
- * @cabul8r/geometry: Pure 2D geometry: vectors, segments, arcs, cubic béziers, areas, intersections.
- *
- * Arrives in M4 (lines and polygons) and M6 (curves).
+ * @cabul8r/geometry: pure 2D math. Sheet space is PDF points (1/72"), y-down, as displayed.
  */
-export {}
+export * from './vec'
+export * from './view'

@@ -1,6 +1,5 @@
 /**
- * @cabul8r/canvas: Retained scene graph, PaintTarget backends (Canvas2D, pdf-lib), drawing tools and snapping.
- *
- * Arrives in M4 (tools), M5 (snapping) and M10 (pdf-lib print backend).
+ * @cabul8r/canvas: sheet viewing now; the markup scene graph, drawing tools, snapping and
+ * the PaintTarget backends arrive in M4, M5 and M10.
  */
-export {}
+export * from './SheetViewer'

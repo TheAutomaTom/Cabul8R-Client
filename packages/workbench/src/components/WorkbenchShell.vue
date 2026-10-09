@@ -18,6 +18,9 @@ const state = props.workbench.state
 function onKeydown(e: KeyboardEvent) {
   const command = matchKeybinding(props.workbench.commands, e)
   if (!command) return
+  // Plain-key shortcuts (H, M, …) must not fire while typing.
+  const typing = (e.target as HTMLElement | null)?.closest?.('input, textarea, [contenteditable]')
+  if (typing && !e.ctrlKey && !e.metaKey && !e.altKey) return
   e.preventDefault()
   command.run()
 }

@@ -1,6 +1,6 @@
 /**
- * @cabul8r/document: Document model, JSON schema, serializable commands with undo/redo, and .c8r project files.
- *
- * Arrives in M2 (project files) and M4 (commands and undo).
+ * @cabul8r/document: document model, scale calibration and the user-configurable taxonomy.
+ * Commands with undo/redo and .c8r project files arrive with M2's project work and M4.
  */
-export {}
+export * from './scale'
+export * from './taxonomy'

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useWorkbench } from '../workbench'
+import { tabTitle, useWorkbench } from '../workbench'
 
 const wb = useWorkbench()
 const active = computed(() => wb.editors.find((e) => e.id === wb.state.activeEditor))
@@ -29,7 +29,7 @@ function onTabMouseDown(e: MouseEvent, id: string) {
         "
       >
         <span v-if="tab.icon" class="codicon" :class="'codicon-' + tab.icon" />
-        <span class="label">{{ tab.title }}</span>
+        <span class="label">{{ tabTitle(tab) }}</span>
         <button class="close wb-icon-button" title="Close" @click.stop="wb.closeEditor(tab.id)">
           <span class="codicon" :class="tab.dirty ? 'codicon-circle-filled' : 'codicon-close'" />
         </button>

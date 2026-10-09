@@ -3,8 +3,8 @@
 The desktop (Electron) and web (PWA) app for [Cabul8R](https://github.com/TheAutomaTom/Cabul8R):
 open PDF plans, set their scale, draw and dimension on them, and report drawn vs. scaled sizes.
 
-> **Status: early development.** The VS Code-style workbench and the measurement engine work today.
-> PDF viewing (M2) is next. See the
+> **Status: early development.** Open PDF plans, set each page's scale (calibrate or pick a preset),
+> and measure drawn vs. scaled lengths. Project files and drawing tools are next. See the
 > [roadmap](https://github.com/TheAutomaTom/Cabul8R/blob/main/docs/roadmap.md).
 
 ## Getting started

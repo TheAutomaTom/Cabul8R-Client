@@ -58,3 +58,19 @@ describe('DimensionInput', () => {
     expect(wrapper.find('input').element.value).toBe('1200 mm')
   })
 })
+
+describe('DimensionInput submit', () => {
+  beforeEach(() => setActivePinia(createPinia()))
+
+  it('emits submit with the parsed value on Enter only', async () => {
+    const w = mount(DimensionInput, { props: { modelValue: undefined } })
+    const input = w.find('input')
+    await input.trigger('focus')
+    await input.setValue(`16'`)
+    await input.trigger('blur')
+    expect(w.emitted('submit')).toBeUndefined()
+    await input.trigger('focus')
+    await input.trigger('keydown', { key: 'Enter' })
+    expect(w.emitted('submit')?.[0]).toEqual([16 * 304.8])
+  })
+})

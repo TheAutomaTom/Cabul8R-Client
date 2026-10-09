@@ -17,7 +17,11 @@
     "@cabul8r/units": "workspace:*",
     "@cabul8r/workbench": "workspace:*",
     "pinia": "^4.0.3",
-    "vue": "^3.5.43"
+    "vue": "^3.5.43",
+    "@cabul8r/canvas": "workspace:*",
+    "@cabul8r/document": "workspace:*",
+    "@cabul8r/geometry": "workspace:*",
+    "@cabul8r/pdf": "workspace:*"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.9",

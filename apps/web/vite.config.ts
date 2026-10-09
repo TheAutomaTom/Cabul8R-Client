@@ -1,10 +1,12 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
+import { pdfjsAssets } from '@cabul8r/pdf/vite'
 
 export default defineConfig({
   plugins: [
     vue(),
+    pdfjsAssets(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['icon.svg'],
@@ -19,9 +21,9 @@ export default defineConfig({
         file_handlers: [{ action: '/', accept: { 'application/pdf': ['.pdf'] } }],
       },
       workbox: {
-        // pdf.js and plan sheets are large; cache app code up to 10 MB per file.
+        // pdf.js is large; cache app code and its data files (fonts, cmaps, decoders) for offline use.
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
-        globPatterns: ['**/*.{js,css,html,svg,ttf,woff2}'],
+        globPatterns: ['**/*.{js,mjs,css,html,svg,ttf,woff2,wasm,bcmap,pfb,icc}'],
       },
     }),
   ],

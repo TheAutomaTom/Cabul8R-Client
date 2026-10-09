@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { formatLength, parseLength } from '@cabul8r/units'
 import { useSettings } from '../settings'
 
@@ -8,12 +8,19 @@ import { useSettings } from '../settings'
  * reads them before committing. The model value is always millimeters.
  */
 const model = defineModel<number | undefined>()
-const props = defineProps<{ label?: string; placeholder?: string }>()
-const emit = defineEmits<{ commit: [mm: number] }>()
+const props = defineProps<{ label?: string; placeholder?: string; autofocus?: boolean }>()
+const emit = defineEmits<{
+  /** The value was accepted (Enter, blur or nudge). */
+  commit: [mm: number]
+  /** Enter was pressed on a valid value, e.g. to submit a surrounding form. */
+  submit: [mm: number]
+}>()
 
 const settings = useSettings()
 const text = ref('')
 const focused = ref(false)
+const input = ref<HTMLInputElement>()
+onMounted(() => props.autofocus && input.value?.focus())
 
 const format = (mm: number) =>
   formatLength(mm, { style: settings.lengthStyle, denominator: settings.denominator })
@@ -52,8 +59,12 @@ function revert() {
 }
 
 function onKeydown(e: KeyboardEvent) {
-  if (e.key === 'Enter') commit()
-  else if (e.key === 'Escape') revert()
+  if (e.key === 'Enter') {
+    // Read the parsed value before committing: the v-model prop updates only after re-render.
+    const result = parsed.value
+    commit()
+    if (result?.ok) emit('submit', result.mm)
+  } else if (e.key === 'Escape') revert()
   else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
     const base = parsed.value?.ok ? parsed.value.mm : (model.value ?? 0)
     const step = settings.nudgeMm * (e.shiftKey ? 10 : 1) * (e.key === 'ArrowUp' ? 1 : -1)
@@ -75,6 +86,7 @@ function onBlur() {
     <span v-if="props.label" class="label">{{ props.label }}</span>
     <span class="field">
       <input
+        ref="input"
         v-model="text"
         class="wb-input"
         spellcheck="false"
