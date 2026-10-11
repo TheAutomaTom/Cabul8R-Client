@@ -1,0 +1,12 @@
+{
+  "//": "VS Code passes ELECTRON_RUN_AS_NODE=1 to its terminals, which breaks `pnpm dev:desktop`.",
+  "terminal.integrated.env.windows": {
+    "ELECTRON_RUN_AS_NODE": null
+  },
+  "terminal.integrated.env.osx": {
+    "ELECTRON_RUN_AS_NODE": null
+  },
+  "terminal.integrated.env.linux": {
+    "ELECTRON_RUN_AS_NODE": null
+  }
+}
