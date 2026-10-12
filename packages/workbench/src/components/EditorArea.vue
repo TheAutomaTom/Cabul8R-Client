@@ -36,8 +36,20 @@ function onTabMouseDown(e: MouseEvent, id: string) {
       </div>
     </div>
     <div class="editor">
-      <component :is="active.component" v-if="active" v-bind="active.props" />
-      <div v-else class="watermark">
+      <!--
+        Every open tab keeps its own live component and is only hidden when inactive. Rendering
+        a single <component :is> would reuse one instance across tabs of the same type (two
+        pages), keeping the first tab's state and losing zoom and pan when switching.
+      -->
+      <div
+        v-for="tab in wb.editors"
+        v-show="tab.id === wb.state.activeEditor"
+        :key="tab.id"
+        class="editor-pane"
+      >
+        <component :is="tab.component" v-bind="tab.props" />
+      </div>
+      <div v-if="!active" class="watermark">
         <span class="codicon codicon-layers" />
       </div>
     </div>
@@ -105,6 +117,10 @@ function onTabMouseDown(e: MouseEvent, id: string) {
   position: relative;
   flex: 1;
   min-height: 0;
+}
+.editor-pane {
+  position: absolute;
+  inset: 0;
   overflow: auto;
 }
 .watermark {

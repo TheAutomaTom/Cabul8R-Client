@@ -216,7 +216,8 @@ onMounted(async () => {
     viewers.set(props.pageId, viewer)
     resizeObserver = new ResizeObserver(() => {
       const r = host.value?.getBoundingClientRect()
-      if (r) viewer?.resize(r.width, r.height)
+      // An inactive tab is display:none and measures 0x0; keep its last size and bitmaps.
+      if (r && r.width > 0 && r.height > 0) viewer?.resize(r.width, r.height)
     })
     resizeObserver.observe(host.value)
   } catch (e) {
@@ -343,7 +344,7 @@ const toolButtons: { tool: Tool; icon: string; title: string }[] = [
         ])
       "
     >
-      <canvas ref="canvas" data-testid="page-canvas" />
+      <canvas ref="canvas" data-testid="page-canvas" :data-page-id="pageId" />
       <p v-if="error" class="error">{{ error }}</p>
       <form
         v-if="calibrating"

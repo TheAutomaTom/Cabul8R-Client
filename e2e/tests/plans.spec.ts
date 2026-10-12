@@ -33,9 +33,12 @@ test.afterAll(async () => {
   await app?.close()
 })
 
+/** Every open page keeps its own (hidden) editor, so match only the one on screen. */
+const visible = (testId: string) => page.getByTestId(testId).filter({ visible: true })
+
 /** Screen position of a sheet-space point on the page canvas. */
 async function screenPoint(p: { x: number; y: number }) {
-  const canvas = page.getByTestId('page-canvas')
+  const canvas = visible('page-canvas')
   const view = JSON.parse((await canvas.getAttribute('data-view'))!) as {
     zoom: number
     x: number
@@ -65,7 +68,7 @@ test('opens a planset, calibrates a page and measures drawn vs. scaled length', 
   await expect(pages.nth(0)).toContainText('A-101')
   await expect(pages.nth(1)).toContainText('A-102')
   await expect(page.getByRole('tab', { name: /A-101/ })).toBeVisible()
-  const canvas = page.getByTestId('page-canvas')
+  const canvas = visible('page-canvas')
   await expect(canvas).toHaveAttribute('data-rendered', 'true')
   const inked = await canvas.evaluate((c: HTMLCanvasElement) => {
     const d = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data
@@ -111,7 +114,7 @@ test('opens a planset, calibrates a page and measures drawn vs. scaled length', 
 })
 
 test('zooms around the cursor and fits the page', async () => {
-  const canvas = page.getByTestId('page-canvas')
+  const canvas = visible('page-canvas')
   const before = JSON.parse((await canvas.getAttribute('data-view'))!)
   const s = await screenPoint(KNOWN_LINE.a)
   await page.mouse.move(s.x, s.y)

@@ -10,15 +10,24 @@ export const SHEET = { width: 792, height: 612 }
  */
 export const KNOWN_LINE = { a: { x: 72, y: 306 }, b: { x: 360, y: 306 }, realFeet: 16 }
 
-/** Write a two-page planset with known dimensions and title blocks A-101 and A-102. */
-export async function writePlanFixture(path: string): Promise<string> {
+const DEFAULT_SHEETS: readonly (readonly [string, string])[] = [
+  ['A-101', 'FLOOR PLAN'],
+  ['A-102', 'REFLECTED CEILING PLAN'],
+]
+
+/**
+ * Write a planset with known dimensions and one page per [sheet number, title] pair
+ * (default: A-101 and A-102). `solid` adds a large filled block so a different file looks different.
+ */
+export async function writePlanFixture(
+  path: string,
+  sheets: readonly (readonly [string, string])[] = DEFAULT_SHEETS,
+  options: { solid?: boolean } = {},
+): Promise<string> {
   const pdf = await PDFDocument.create()
   const font = await pdf.embedFont(StandardFonts.Helvetica)
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold)
-  for (const [n, title] of [
-    ['A-101', 'FLOOR PLAN'],
-    ['A-102', 'REFLECTED CEILING PLAN'],
-  ] as const) {
+  for (const [n, title] of sheets) {
     const page = pdf.addPage([SHEET.width, SHEET.height])
     const y = (sheetY: number) => SHEET.height - sheetY // pdf-lib is y-up
     page.drawRectangle({
@@ -35,6 +44,8 @@ export async function writePlanFixture(path: string): Promise<string> {
       thickness: 2,
     })
     page.drawText(`16'-0"`, { x: 196, y: y(296), size: 10, font })
+    if (options.solid)
+      page.drawRectangle({ x: 100, y: y(500), width: 300, height: 200, color: rgb(0, 0, 0) })
     page.drawRectangle({
       x: 560,
       y: 18,
