@@ -4,7 +4,6 @@ out/
 dev-dist/
 release/
 coverage/
-.turbo/
 *.tsbuildinfo
 .env
 .env.*
